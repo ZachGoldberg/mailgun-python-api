@@ -35,7 +35,7 @@ class MailingList(object):
             yield member
 
     def email(self, subject, body, from_email):
-        self.api.send_email(subject, body, body,
+        return self.api.send_email(subject, body, body,
                             to_email=self.address,
                             from_email=from_email)
 
@@ -46,7 +46,7 @@ class MailingList(object):
             if getattr(self, field, None):
                 data[field] = getattr(self, field)
 
-        self.api._api_request("/lists/%s" % self.address,
+        return self.api._api_request("/lists/%s" % self.address,
                               data=data,
                               method="PUT")
 
