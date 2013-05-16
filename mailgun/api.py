@@ -21,7 +21,9 @@ class MailgunAPI(object):
             self.mailing_lists = MailingLists(api_key, api_list_name,
                                            test_mode, default_from_email)
 
-    def _api_list(self, path, data, method):
+    def _api_list(self, path, data=None, method="GET"):
+        if not data:
+            data = {}
         skip = 0
         limit = 100
         while True:

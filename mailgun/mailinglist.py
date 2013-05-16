@@ -25,12 +25,14 @@ class MailingList(object):
                 "name": name,
                 "vars": optional_vars,
                 "subscribed": subscribed,
-                "upset": True,
+                "upsert": True,
                 },
             method="POST")
 
     def get_members(self, subscribed=None):
-        pass
+        for member in self.api._api_list("/lists/%s/members" % self.address,
+                                         method="GET"):
+            yield member
 
     def __unicode__(self):
         return self.address
