@@ -7,6 +7,28 @@ class MailgunException(Exception):
     pass
 
 
+class RouteExpression(object):
+    EXP_MATCH_RECIPIENT = "match_recipient"
+    EXP_MATCH_HEADER = "match_header"
+    EXP_CATCH_ALL = "catch_all"
+
+    ACTION_FORWARD = "forward"
+    ACTION_STOP = "stop"
+
+    def __init__(self, exp, params=None):
+        self.exp = exp
+        self.params = params
+
+    def __str__(self):
+        if self.params:
+            return "%s(\"%s\")" % (self.exp, self.params)
+        else:
+            return "%s()" % self.exp
+
+    def __unicode__(self):
+        return str(self)
+
+
 class MailgunAPI(object):
     def __init__(self, api_key, api_list_name, test_mode=False,
                  default_from_email=None):
@@ -106,3 +128,27 @@ class MailgunAPI(object):
             data["bcc"] = bcc
 
         return self._api_request("/%s/messages" % self.api_list_name, data)
+
+    def get_routes(self):
+        for route in self._api_list("/routes", method="GET"):
+            yield route
+
+    def add_route(self, priority,
+                  description,
+                  expression,
+                  action):
+        data = {
+            "priority": priority,
+            "description": description,
+            "expression": str(expression),
+            "action": str(action),
+            }
+
+        self._api_request("/routes",
+                          data=data,
+                          method="POST")
+
+    def delete_route(self, route_id):
+        self._api_request("/routes/%s" % route_id,
+                          method="DELETE",
+                          data=None)

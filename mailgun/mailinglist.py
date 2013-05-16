@@ -34,6 +34,10 @@ class MailingList(object):
                                          method="GET"):
             yield member
 
+    def email(self, subject, body):
+        self.api.send_email(subject, body, body,
+                            self.address, self.address)
+
     def __unicode__(self):
         return self.address
 
@@ -46,7 +50,10 @@ class MailingLists(MailgunAPI):
     ACCESS_MEMBERS = "members"
     ACCESS_EVERYONE = "everyone"
 
-    def get(self, address=None):
+    def get(self, address=None, lookup=True):
+        if not lookup:
+            return MailingList(self, address)
+
         data = {}
         if address:
             data["address"] = address
