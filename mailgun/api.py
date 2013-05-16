@@ -16,10 +16,31 @@ class MailgunAPI(object):
         self.default_from_email = default_from_email
 
         # Some awkward fiddling to make the API namespace pretty
-        from mailinglist import MailingList
-        if self.__class__ != MailingList:
-            self.MailingList = MailingList(api_key, api_list_name,
+        from mailinglist import MailingLists
+        if self.__class__ != MailingLists:
+            self.mailing_lists = MailingLists(api_key, api_list_name,
                                            test_mode, default_from_email)
+
+    def _api_list(self, path, data, method):
+        skip = 0
+        limit = 100
+        while True:
+            data.update({
+                    "skip": skip,
+                    "limit": limit,
+                    })
+
+            results = self._api_request(
+                path,
+                data=data,
+                method=method)
+
+            for item in results["items"]:
+                yield item
+
+            skip += limit
+            if skip >= results["total_count"]:
+                return
 
     def _api_request(self, path, data, method=None):
         response_json = None

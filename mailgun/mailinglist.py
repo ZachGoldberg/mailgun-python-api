@@ -1,26 +1,77 @@
 from mailgun import MailgunAPI
 
 
-class MailingList(MailgunAPI):
+class MailingList(object):
+    def __init__(self, api, address):
+        self.address = address
+        self.api = api
+
+    @classmethod
+    def from_api(cls, api, data):
+        obj = cls(api, data.get("address"))
+        for key, val in data.iteritems():
+            setattr(obj, key, val)
+
+        return obj
+
+    def add_member(self, address,
+                   name=None,
+                   optional_vars=None,
+                   subscribed=True):
+        return self.api._api_request(
+            "/lists/%s/members" % self.address,
+            data={
+                "address": address,
+                "name": name,
+                "vars": optional_vars,
+                "subscribed": subscribed,
+                "upset": True,
+                },
+            method="POST")
+
+    def get_members(self, subscribed=None):
+        pass
+
+    def __unicode__(self):
+        return self.address
+
+    def __str__(self):
+        return unicode(self)
+
+
+class MailingLists(MailgunAPI):
+    ACCESS_READONLY = "readonly"
+    ACCESS_MEMBERS = "members"
+    ACCESS_EVERYONE = "everyone"
 
     def get(self, address=None):
+        data = {}
         if address:
-            result = self._api_request("/lists/%s" % address)
+            data["address"] = address
 
-        skip = 0
-        limit = 100
-        while True:
-            results = self._api_request(
-                "/lists",
-                data={
-                    "skip": skip,
-                    "limit": limit,
-                    },
-                method="GET")
+        for item in self._api_list("/lists",
+                              data,
+                              method="GET"):
+            return MailingList.from_api(self, item)
 
-            for item in results["items"]:
-                yield item
+    def list(self, address=None):
+        data = {}
+        if address:
+            data["address"] = address
 
-            skip += limit
-            if skip >= results["total_count"]:
-                return
+        for item in self._api_list("/lists",
+                              data,
+                              method="GET"):
+            yield MailingList.from_api(self, item)
+
+    def new(self, address, name, description,
+            access_level=ACCESS_MEMBERS):
+        return self._api_request(
+            "/lists", method="POST", data={
+                "address": address,
+                "name": name,
+                "description": description,
+                "access_level": access_level,
+                })
+
+
