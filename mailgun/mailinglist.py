@@ -34,9 +34,21 @@ class MailingList(object):
                                          method="GET"):
             yield member
 
-    def email(self, subject, body):
+    def email(self, subject, body, from_email):
         self.api.send_email(subject, body, body,
-                            self.address, self.address)
+                            to_email=self.address,
+                            from_email=from_email)
+
+    def save(self):
+        fields = ["description", "name", "access_level"]
+        data = {}
+        for field in fields:
+            if getattr(self, field, None):
+                data[field] = getattr(self, field)
+
+        self.api._api_request("/lists/%s" % self.address,
+                              data=data,
+                              method="PUT")
 
     def __unicode__(self):
         return self.address
