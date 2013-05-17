@@ -34,10 +34,12 @@ class MailingList(object):
                                          method="GET"):
             yield member
 
-    def email(self, subject, body, from_email):
-        return self.api.send_email(subject, body, body,
-                            to_email=self.address,
-                            from_email=from_email)
+    def email(self, subject, body, from_email, headers=None):
+        return self.api.send_email(
+            subject, body, body,
+            to_email=self.address,
+            from_email=from_email,
+            headers=headers)
 
     def save(self):
         fields = ["description", "name", "access_level"]

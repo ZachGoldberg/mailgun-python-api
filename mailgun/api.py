@@ -104,7 +104,8 @@ class MailgunAPI(object):
 
     def send_email(self, subject,
                    plain_text, html_text, to_email,
-                   from_email=None, cc=None, bcc=None):
+                   from_email=None, cc=None, bcc=None,
+                   headers=None):
 
         if isinstance(to_email, basestring):
             to_email = (to_email, )
@@ -120,6 +121,10 @@ class MailgunAPI(object):
             "o:testmode": self.test_mode,
             "html": html_text,
             }
+
+        if headers:
+            for k, v in headers.iteritems():
+                data["h:%s" % k] = v
 
         if cc:
             data["cc"] = cc
