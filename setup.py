@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(name='mailgunapi-client',
-      version='1.1',
+      version='1.2',
       description='Python Wrapper around MailGun HTTP API',
       author='Zach Goldberg',
       author_email='zach@zachgoldberg.com',
