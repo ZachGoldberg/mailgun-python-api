@@ -29,6 +29,13 @@ class MailingList(object):
                 },
             method="POST")
 
+    def remove_member(self, member_address):
+        return self.api._api_request(
+            "/lists/%s/members/%s" % (self.address,
+                                      member_address),
+            data={},
+            method="DELETE")
+
     def get_members(self, subscribed=None):
         for member in self.api._api_list("/lists/%s/members" % self.address,
                                          method="GET"):
