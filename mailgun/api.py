@@ -134,6 +134,43 @@ class MailgunAPI(object):
 
         return self._api_request("/%s/messages" % self.api_list_name, data)
 
+    def send_bulk_email(self, subject,
+                        plain_text, html_text, to_data,
+                        from_email=None, cc=None, bcc=None,
+                        headers=None):
+        """
+        @to_data: a dictionary of data dictionaries
+                  keyed by email.
+                  Ex: {"fo@bar.com": {"datakey": datavalue}}]
+        """
+
+        if not from_email:
+            from_email = self.default_from_email
+
+        to_emails = to_data.keys()
+
+        data = {
+            "from": from_email,
+            "to": to_emails,
+            "subject": subject,
+            "text": plain_text,
+            "o:testmode": self.test_mode,
+            "html": html_text,
+            "recipient-variables": json.dumps(to_data),
+            }
+
+        if headers:
+            for k, v in headers.iteritems():
+                data["h:%s" % k] = v
+
+        if cc:
+            data["cc"] = cc
+
+        if bcc:
+            data["bcc"] = bcc
+
+        return self._api_request("/%s/messages" % self.api_list_name, data)
+
     def get_routes(self):
         for route in self._api_list("/routes", method="GET"):
             yield route
