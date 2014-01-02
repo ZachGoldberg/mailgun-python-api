@@ -186,11 +186,11 @@ class MailgunAPI(object):
             "action": str(action),
             }
 
-        self._api_request("/routes",
+        return self._api_request("/routes",
                           data=data,
                           method="POST")
 
     def delete_route(self, route_id):
-        self._api_request("/routes/%s" % route_id,
+        return self._api_request("/routes/%s" % route_id,
                           method="DELETE",
                           data=None)
