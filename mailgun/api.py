@@ -30,7 +30,7 @@ class RouteExpression(object):
 
 
 class MailgunAPI(object):
-    def __init__(self, api_key, api_list_name=None, test_mode=False,
+    def __init__(self, api_key, api_list_name, test_mode=False,
                  default_from_email=None):
         self.api_key = api_key
         self.api_list_name = api_list_name
@@ -42,6 +42,7 @@ class MailgunAPI(object):
         if self.__class__ != MailingLists:
             self.mailing_lists = MailingLists(api_key, api_list_name,
                                            test_mode, default_from_email)
+        self._next = self._previous = None
 
     def _api_list(self, path, data=None, method="GET"):
         if not data:
@@ -93,6 +94,7 @@ class MailgunAPI(object):
             response_json = json.loads(response.content)
             success = response.ok
             reason = response_json.get('message')
+            self.installPaging(response_json)
 
         except BaseException as error:
             reason = error
@@ -186,12 +188,12 @@ class MailgunAPI(object):
             "action": str(action),
             }
 
-        self._api_request("/routes",
+        return self._api_request("/routes",
                           data=data,
                           method="POST")
 
     def delete_route(self, route_id):
-        self._api_request("/routes/%s" % route_id,
+        return self._api_request("/routes/%s" % route_id,
                           method="DELETE",
                           data=None)
 
@@ -207,9 +209,30 @@ class MailgunAPI(object):
         data = {}
         data["addresses"] = addresses
 
-        if syntax_only in (True, False, ):
-            data["syntax_only"] = syntax_only
+    def get_events(self, data):
+        return self._api_request("/%s/events" % self.api_list_name, data,method="GET")
 
-        return self._api_request("/address/parse",
-                          method="GET",
-                          data=data)
+
+    def installPaging(self,js):        
+        if js and 'paging' in js:
+            self._next = js['paging'].get('next',None)
+            self._previous = js['paging'].get('previous',None)
+            return
+        self._next = self._previous = None
+
+
+    def _get(self,url):
+        response = requests.get(url,auth=("api", self.api_key))
+        js = json.loads(response.content)
+        self.installPaging(js)
+        return js
+            
+
+    def next(self):
+        if self._next:
+            return self._get(self._next)        
+
+    def previous(self):
+        if self._previous:
+            return self._get(self._previous)
+        
