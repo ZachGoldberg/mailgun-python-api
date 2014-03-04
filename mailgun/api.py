@@ -30,7 +30,7 @@ class RouteExpression(object):
 
 
 class MailgunAPI(object):
-    def __init__(self, api_key, api_list_name, test_mode=False,
+    def __init__(self, api_key, api_list_name=None, test_mode=False,
                  default_from_email=None):
         self.api_key = api_key
         self.api_list_name = api_list_name
@@ -194,3 +194,22 @@ class MailgunAPI(object):
         self._api_request("/routes/%s" % route_id,
                           method="DELETE",
                           data=None)
+
+    def validate_address(self, address):
+        data = {
+            "address": address
+            }
+        return self._api_request("/address/validate",
+                          method="GET",
+                          data=data)
+        
+    def parse_addresses(self, addresses, syntax_only=None):
+        data = {}
+        data["addresses"] = addresses
+
+        if syntax_only in (True, False, ):
+            data["syntax_only"] = syntax_only
+
+        return self._api_request("/address/parse",
+                          method="GET",
+                          data=data)
