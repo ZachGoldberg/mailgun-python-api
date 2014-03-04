@@ -96,7 +96,7 @@ class MailgunAPI(object):
             reason = response_json.get('message')
             self.installPaging(response_json)
 
-        except BaseException as erraor:
+        except BaseException as error:
             reason = error
 
         if not success:
