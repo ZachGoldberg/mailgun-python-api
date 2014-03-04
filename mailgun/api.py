@@ -96,7 +96,7 @@ class MailgunAPI(object):
             reason = response_json.get('message')
             self.installPaging(response_json)
 
-        except BaseException as error:
+        except BaseException as erraor:
             reason = error
 
         if not success:
@@ -107,7 +107,7 @@ class MailgunAPI(object):
     def send_email(self, subject,
                    plain_text, html_text, to_email,
                    from_email=None, cc=None, bcc=None,
-                   headers=None):
+                   headers=None, data={}):
 
         if isinstance(to_email, basestring):
             to_email = (to_email, )
@@ -115,14 +115,14 @@ class MailgunAPI(object):
         if not from_email:
             from_email = self.default_from_email
 
-        data = {
+        data.update({
             "from": from_email,
             "to": to_email,
             "subject": subject,
             "text": plain_text,
             "o:testmode": self.test_mode,
             "html": html_text,
-            }
+            })
 
         if headers:
             for k, v in headers.iteritems():
@@ -139,7 +139,7 @@ class MailgunAPI(object):
     def send_bulk_email(self, subject,
                         plain_text, html_text, to_data,
                         from_email=None, cc=None, bcc=None,
-                        headers=None):
+                        headers=None, data={}):
         """
         @to_data: a dictionary of data dictionaries
                   keyed by email.
@@ -151,7 +151,7 @@ class MailgunAPI(object):
 
         to_emails = to_data.keys()
 
-        data = {
+        data.update({
             "from": from_email,
             "to": to_emails,
             "subject": subject,
@@ -159,7 +159,7 @@ class MailgunAPI(object):
             "o:testmode": self.test_mode,
             "html": html_text,
             "recipient-variables": json.dumps(to_data),
-            }
+            })
 
         if headers:
             for k, v in headers.iteritems():
